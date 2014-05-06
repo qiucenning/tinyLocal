@@ -23,16 +23,25 @@
  */
 package org.tinygroup.application;
 
+/**
+ * 不管是Web应用还是其它类型的应用，都可以看成是一个Application
+ */
 public interface Application {
+    /**
+     * 对Application进行初始化
+     *
+     * @param applicationContext
+     */
+    void init(ApplicationContext applicationContext);
 
-	/**
-	 * 启动
-	 */
-	void start();
+    /**
+     * 启动
+     */
+    void start(ApplicationContext applicationContext);
 
-	/**
-	 * 停止
-	 */
-	void stop();
+    /**
+     * 停止
+     */
+    void stop(ApplicationContext applicationContext);
 
 }
