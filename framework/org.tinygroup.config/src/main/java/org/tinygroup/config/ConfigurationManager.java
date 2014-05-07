@@ -42,7 +42,7 @@ public interface ConfigurationManager {
 	/**
 	 * 载入配置
 	 * 
-	 * @param content
+	 * @param config
 	 *            配置内容
 	 */
 	void loadApplicationConfig(String config);
