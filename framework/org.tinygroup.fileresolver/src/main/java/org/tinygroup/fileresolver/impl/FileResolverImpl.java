@@ -36,6 +36,7 @@ import org.tinygroup.logger.LoggerFactory;
 import org.tinygroup.vfs.FileObject;
 import org.tinygroup.vfs.VFS;
 import org.tinygroup.vfs.impl.FileSchemaProvider;
+import org.tinygroup.vfs.impl.JarSchemaProvider;
 import org.tinygroup.xmlparser.node.XmlNode;
 
 import java.net.URL;
@@ -156,9 +157,7 @@ public class FileResolverImpl implements FileResolver {
             logger.errorMessage("查找WEB-INF/classes路径失败！", e);
         }
         try {
-            if (isDebugMode) {
                 getWebLibJars(classPaths);
-            }
         } catch (Exception e) {
             logger.errorMessage("查找Web工程中的jar文件列表失败！", e);
         }
@@ -330,6 +329,11 @@ public class FileResolverImpl implements FileResolver {
         processFile(fileObject);
         if (fileObject.isFolder() && fileObject.getChildren() != null) {
             for (FileObject f : fileObject.getChildren()) {
+                String lowerCase = f.getFileName().toLowerCase();
+                if(lowerCase.endsWith(".jar")|| lowerCase.endsWith(".zip")){
+                    logger.logMessage(LogLevel.INFO, "文件:[{}]是Jar文件，跳过", f.getAbsolutePath());
+                    continue;
+                }
                 if (!allScanningPath.contains(f.getAbsolutePath())) {
                     resolveFileObject(f);
                 } else {
