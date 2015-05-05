@@ -38,7 +38,7 @@ public class JarSchemaProvider implements SchemaProvider {
 		} else if (resource.startsWith(FileSchemaProvider.FILE_PROTOCAL)) {
 			resource = resource.substring(FileSchemaProvider.FILE_PROTOCAL
 					.length());
-		} else if (resource.startsWith(WAS_JAR)) {
+		} else if (resource.startsWith(WAS_JAR)) {//增加wsjar协议的截断处理
 			resource = resource.substring(WAS_JAR.length());
 		}
 		if (resource.startsWith(FileSchemaProvider.FILE_PROTOCAL)) {
