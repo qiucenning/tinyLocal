@@ -23,6 +23,7 @@
  */
 package org.tinygroup.vfs;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 import junit.framework.TestCase;
@@ -64,5 +65,17 @@ public class TestJarFileObject extends TestCase {
 			}
 		}
 		return null;
+	}
+	
+	public void testWasJar() throws IOException{
+		String path="wsjar:file:"+getClass().getResource("/vfs-0.0.1-SNAPSHOT.jar").getFile();
+		FileObject fileObject = VFS.resolveFile(path);
+		FileObject fo = findFileObject(fileObject, "VFS.class");
+		if (fo != null) {
+			InputStream inputStream = fo.getInputStream();
+			byte[] buf = new byte[(int) fo.getSize()];
+			inputStream.close();
+			assertTrue(buf!=null);
+		}
 	}
 }

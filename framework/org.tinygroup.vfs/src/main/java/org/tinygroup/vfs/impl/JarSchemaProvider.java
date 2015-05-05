@@ -30,16 +30,21 @@ public class JarSchemaProvider implements SchemaProvider {
 
 	public static final String JAR = ".jar";
 	public static final String JAR_PROTOCAL = "jar:";
+	public static final String WAS_JAR = "wsjar:";
 
 	public FileObject resolver(String resource) {
 		if (resource.startsWith(JAR_PROTOCAL)) {
 			resource = resource.substring(JAR_PROTOCAL.length());
 		} else if (resource.startsWith(FileSchemaProvider.FILE_PROTOCAL)) {
-			resource = resource.substring(FileSchemaProvider.FILE_PROTOCAL.length());
+			resource = resource.substring(FileSchemaProvider.FILE_PROTOCAL
+					.length());
+		} else if (resource.startsWith(WAS_JAR)) {
+			resource = resource.substring(WAS_JAR.length());
 		}
 		if (resource.startsWith(FileSchemaProvider.FILE_PROTOCAL)) {
-	        resource = resource.substring(FileSchemaProvider.FILE_PROTOCAL.length());
-	     }
+			resource = resource.substring(FileSchemaProvider.FILE_PROTOCAL
+					.length());
+		}
 		return new JarFileObject(this, resource);
 	}
 
