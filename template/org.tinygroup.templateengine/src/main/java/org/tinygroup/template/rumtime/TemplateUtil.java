@@ -26,7 +26,9 @@ import org.tinygroup.template.*;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.*;
 import java.math.BigDecimal;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -269,6 +271,9 @@ public final class TemplateUtil {
      * @return
      */
     public static String getPath(String currentPath, String newPath) {
+        if(newPath.startsWith("/")){
+            return newPath;
+        }
         String path = newPath;
         URI uri = URI.create(currentPath);
         path = path.replaceAll("[\\\\]", "/");

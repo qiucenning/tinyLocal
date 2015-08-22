@@ -18,9 +18,13 @@ package org.tinygroup.template.function;
 import org.tinygroup.template.Template;
 import org.tinygroup.template.TemplateContext;
 import org.tinygroup.template.TemplateException;
+import org.tinygroup.template.interpret.TemplateFromContext;
 import org.tinygroup.template.loader.StringResourceLoader;
+import org.tinygroup.template.rumtime.TemplateUtil;
 
 import java.io.StringWriter;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 /**
  * Created by luoguo on 2014/6/9.
@@ -35,8 +39,10 @@ public class ParseTemplateFunction extends AbstractTemplateFunction{
         if(parameters.length==0||!(parameters[0] instanceof String)){
             notSupported(parameters);
         }
+        String path=parameters[0].toString();
+        path= TemplateUtil.getPath(((TemplateFromContext)template).getPath(),path);
         StringWriter writer =new StringWriter();
-        template.getTemplateEngine().renderTemplateWithOutLayout(parameters[0].toString(),context,writer);
+        template.getTemplateEngine().renderTemplateWithOutLayout(path,context,writer);
         return writer.toString();
     }
 }

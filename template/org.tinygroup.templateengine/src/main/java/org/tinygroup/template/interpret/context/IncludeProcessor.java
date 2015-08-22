@@ -22,6 +22,7 @@ import org.tinygroup.template.interpret.ContextProcessor;
 import org.tinygroup.template.interpret.TemplateFromContext;
 import org.tinygroup.template.interpret.TemplateInterpreter;
 import org.tinygroup.template.parser.grammer.TinyTemplateParser;
+import org.tinygroup.template.rumtime.TemplateUtil;
 
 import java.io.Writer;
 import java.net.URL;
@@ -42,12 +43,7 @@ public class IncludeProcessor implements ContextProcessor<TinyTemplateParser.Inc
 
     public Object process(TemplateInterpreter interpreter, TemplateFromContext templateFromContext, TinyTemplateParser.Include_directiveContext parseTree, TemplateContext pageContext, TemplateContext context, TemplateEngineDefault engine, Writer writer, String fileName) throws Exception {
         String path = interpreter.interpretTree(engine, templateFromContext, parseTree.expression(), pageContext, context, writer,fileName).toString();
-        if (!path.startsWith("/")) {
-            //如果不是绝对路径
-            URL url=new URL("file:"+templateFromContext.getPath());
-            URL newUrl=new URL(url,path);
-            path=newUrl.getPath();
-        }
+        path= TemplateUtil.getPath(templateFromContext.getPath(),path);
         if (parseTree.hash_map_entry_list() != null) {
             Map map = (Map) interpreter.interpretTree(engine, templateFromContext, parseTree.hash_map_entry_list(), pageContext, context, writer,fileName);
             TemplateContext newContext = new TemplateContextDefault(map);
