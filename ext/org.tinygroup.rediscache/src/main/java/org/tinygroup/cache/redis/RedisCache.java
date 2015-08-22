@@ -8,12 +8,11 @@ import org.tinygroup.cache.Cache;
 import org.tinygroup.cache.CacheManager;
 import org.tinygroup.cache.exception.CacheException;
 import org.tinygroup.cache.redis.config.JedisConfig;
+import org.tinygroup.cache.redis.config.JedisConfigWrapper;
 import org.tinygroup.cache.redis.util.SerializeUtil;
-import org.tinygroup.commons.tools.StringUtil;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.Protocol;
 
 /**
  * 基于redis的缓存实现方案
@@ -25,32 +24,24 @@ public class RedisCache implements Cache {
 
 	private RedisCacheManager redisCacheManager;
 	private JedisPool jedisPool;
-	private JedisConfig jedisConfig;
+	private JedisConfigWrapper jedisConfig;
 
 	public void init(String region) {
 
 		try {
-			jedisConfig = redisCacheManager.getJedisManager().getJedisConfig(
+			JedisConfig config = redisCacheManager.getJedisManager().getJedisConfig(
 					region);
 			
-			if(jedisConfig==null){
+			if(config==null){
 			   throw new NullPointerException(String.format("根据region:[%s]没有找到匹配的JedisConfig配置对象", region));	
+			}else{
+			   jedisConfig = new JedisConfigWrapper(config);
 			}
-
-			// 设置默认参数
-			String host = StringUtil.isBlank(jedisConfig.getHost()) ? Protocol.DEFAULT_HOST
-					: jedisConfig.getHost();
-			int port = jedisConfig.getPort() <= 0 ? Protocol.DEFAULT_PORT
-					: jedisConfig.getPort();
-			int timeout = jedisConfig.getTimeout() < 0 ? Protocol.DEFAULT_TIMEOUT
-					: jedisConfig.getTimeout();
-			int database = jedisConfig.getDatabase() < 0 ? Protocol.DEFAULT_DATABASE
-					: jedisConfig.getDatabase();
 
 			// 实例化jedis连接池
 			jedisPool = new JedisPool(redisCacheManager.getJedisManager()
-					.getJedisPoolConfig(region), host, port, timeout,
-					jedisConfig.getPassword(), database,
+					.getJedisPoolConfig(region), jedisConfig.getHost(), jedisConfig.getPort(), jedisConfig.getTimeout(),
+					jedisConfig.getPassword(), jedisConfig.getDatabase(),
 					jedisConfig.getClientName());
 		} catch (Exception e) {
 			throw new CacheException(e);
@@ -228,7 +219,7 @@ public class RedisCache implements Cache {
 
 	private byte[] getByteKey(String key) {
 		try {
-			return key.getBytes(jedisConfig.getCharset()==null?"utf-8":jedisConfig.getCharset());
+			return key.getBytes(jedisConfig.getCharset());
 		} catch (UnsupportedEncodingException e) {
 			throw new CacheException(e);
 		}
