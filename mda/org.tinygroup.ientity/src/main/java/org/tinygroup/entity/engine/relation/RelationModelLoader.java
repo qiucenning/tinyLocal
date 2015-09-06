@@ -23,6 +23,9 @@
  */
 package org.tinygroup.entity.engine.relation;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.tinygroup.entity.engine.entity.EntityModelLoader;
 import org.tinygroup.imda.ModelLoader;
 import org.tinygroup.logger.LogLevel;
@@ -43,7 +46,13 @@ public class RelationModelLoader implements ModelLoader{
 	public Object loadModel(FileObject fileObject) {
 		logger.logMessage(LogLevel.INFO, "正在加载关系模型文件<{}>",fileObject.getAbsolutePath());
 		XStream xstream =XStreamFactory.getXStream("entities");
-		Object object= xstream.fromXML(fileObject.getInputStream());
+		InputStream inputStream = fileObject.getInputStream();
+		Object object= xstream.fromXML(inputStream);
+		try {
+			inputStream.close();
+		} catch (IOException e) {
+			logger.errorMessage("关闭流时发生异常,文件路径:{}",e,fileObject.getAbsolutePath());
+		}
 		logger.logMessage(LogLevel.INFO, "关系模型文件<{}>加载完毕。",fileObject.getAbsolutePath());
 		return object;
 	}

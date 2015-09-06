@@ -23,6 +23,9 @@
  */
 package org.tinygroup.uiengine.fileresolver;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.tinygroup.fileresolver.impl.AbstractFileProcessor;
 import org.tinygroup.logger.LogLevel;
 import org.tinygroup.springutil.SpringUtil;
@@ -72,8 +75,14 @@ public class UIComponentFileProcessor extends AbstractFileProcessor {
 			if(oldUiComponents!=null){
 				manager.removeUIComponents(oldUiComponents);
 			}	
+			InputStream inputStream = fileObject.getInputStream();
 			UIComponents uiComponents = (UIComponents) stream
-					.fromXML(fileObject.getInputStream());
+					.fromXML(inputStream);
+			try {
+				inputStream.close();
+			} catch (IOException e) {
+				logger.errorMessage("关闭流时发生异常,文件路径:{}",e,fileObject.getAbsolutePath());
+			}
 			manager.addUIComponents(uiComponents);
 			caches.put(fileObject.getAbsolutePath(), uiComponents);
 			logger.logMessage(LogLevel.INFO, "加载uicomponent文件[{0}]结束",

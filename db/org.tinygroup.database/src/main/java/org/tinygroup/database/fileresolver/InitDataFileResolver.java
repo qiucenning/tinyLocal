@@ -23,6 +23,9 @@
  */
 package org.tinygroup.database.fileresolver;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.tinygroup.database.config.initdata.InitDatas;
 import org.tinygroup.database.initdata.InitDataProcessor;
 import org.tinygroup.database.util.DataBaseUtil;
@@ -65,8 +68,14 @@ public class InitDataFileResolver extends AbstractFileProcessor {
 			if(oldInitDatas!=null){
 				initDataProcessor.removeInitDatas(oldInitDatas);
 			}
-			InitDatas initDatas = (InitDatas) stream.fromXML(fileObject
-					.getInputStream());
+			InputStream inputStream = fileObject
+					.getInputStream();
+			InitDatas initDatas = (InitDatas) stream.fromXML(inputStream);
+			try {
+				inputStream.close();
+			} catch (IOException e) {
+				logger.errorMessage("关闭流时发生异常,文件路径:{}",e,fileObject.getAbsolutePath());
+			}
 			initDataProcessor.addInitDatas(initDatas);
 			caches.put(fileObject.getAbsolutePath(), initDatas);
 			logger.logMessage(LogLevel.INFO, "读取表格初始化数据init文件{0}完毕",

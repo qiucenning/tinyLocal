@@ -23,6 +23,9 @@
  */
 package org.tinygroup.plugin.fileprocessor;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.tinygroup.fileresolver.impl.AbstractFileProcessor;
 import org.tinygroup.logger.LogLevel;
 import org.tinygroup.plugin.PluginManager;
@@ -69,8 +72,14 @@ public class PluginFileProcessor extends AbstractFileProcessor {
 			if(oldConfigs!=null){
 				manager.removePlugin(oldConfigs);
 			}
-			PluginConfigs configs = (PluginConfigs) stream.fromXML(file
-					.getInputStream());
+			InputStream inputStream = file
+					.getInputStream();
+			PluginConfigs configs = (PluginConfigs) stream.fromXML(inputStream);
+			try {
+				inputStream.close();
+			} catch (IOException e) {
+				logger.errorMessage("关闭流时发生异常,文件路径:{}",e,file.getAbsolutePath());
+			}
 			manager.addPlugin(configs);
 			caches.put(file.getAbsolutePath(), configs);
 			logger.logMessage(LogLevel.INFO, "读取plugin配置文件:{0}完成",

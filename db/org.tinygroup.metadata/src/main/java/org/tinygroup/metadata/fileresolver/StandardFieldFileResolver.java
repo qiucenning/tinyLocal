@@ -23,6 +23,9 @@
  */
 package org.tinygroup.metadata.fileresolver;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.tinygroup.fileresolver.impl.AbstractFileProcessor;
 import org.tinygroup.logger.LogLevel;
 import org.tinygroup.metadata.config.stdfield.StandardFields;
@@ -65,8 +68,14 @@ public class StandardFieldFileResolver extends AbstractFileProcessor {
 			if(oldStandardFields!=null){
 				standardFieldProcessor.removeStandardFields(oldStandardFields);
 			}
+			InputStream inputStream = fileObject.getInputStream();
 			StandardFields standardFields = (StandardFields) stream
-					.fromXML(fileObject.getInputStream());
+					.fromXML(inputStream);
+			try {
+				inputStream.close();
+			} catch (IOException e) {
+				logger.errorMessage("关闭流时发生异常,文件路径:{}",e,fileObject.getAbsolutePath());
+			}
 			standardFieldProcessor.addStandardFields(standardFields);
 			caches.put(fileObject.getAbsolutePath(), standardFields);
 			logger.logMessage(LogLevel.INFO, "加载stdfield文件[{0}]结束",

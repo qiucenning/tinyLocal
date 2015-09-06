@@ -23,6 +23,9 @@
  */
 package org.tinygroup.database.fileresolver;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.tinygroup.database.config.dialectfunction.DialectFunctions;
 import org.tinygroup.database.dialectfunction.DialectFunctionProcessor;
 import org.tinygroup.database.util.DataBaseUtil;
@@ -65,8 +68,14 @@ public class DialectFunctionlFileResolver extends AbstractFileProcessor {
 			if(oldFunctions!=null){
 				functionProcessor.removeDialectFunctions(oldFunctions);
 			}
-			DialectFunctions functions = (DialectFunctions) stream.fromXML(fileObject
-					.getInputStream());
+			InputStream inputStream = fileObject
+					.getInputStream();
+			DialectFunctions functions = (DialectFunctions) stream.fromXML(inputStream);
+			try {
+				inputStream.close();
+			} catch (IOException e) {
+				logger.errorMessage("关闭流时发生异常,文件路径:{}",e,fileObject.getAbsolutePath());
+			}
 			functionProcessor.addDialectFunctions(functions);
 			caches.put(fileObject.getAbsolutePath(), functions);
 			logger.logMessage(LogLevel.INFO, "加载function文件[{0}]结束",

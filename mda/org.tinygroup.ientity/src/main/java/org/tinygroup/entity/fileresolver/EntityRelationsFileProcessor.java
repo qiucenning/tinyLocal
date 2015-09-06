@@ -23,6 +23,9 @@
  */
 package org.tinygroup.entity.fileresolver;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.tinygroup.entity.EntityRelationsManager;
 import org.tinygroup.entity.relation.EntityRelations;
 import org.tinygroup.fileresolver.impl.AbstractFileProcessor;
@@ -72,8 +75,14 @@ public class EntityRelationsFileProcessor extends AbstractFileProcessor {
 			if(oldRelations!=null){
 				manager.removeEntityRelations(oldRelations);
 			}
+			InputStream inputStream = fileObject.getInputStream();
 			EntityRelations entityRelations = (EntityRelations) xStream
-					.fromXML(fileObject.getInputStream());
+					.fromXML(inputStream);
+			try {
+				inputStream.close();
+			} catch (IOException e) {
+				logger.errorMessage("关闭流时发生异常,文件路径:{}",e,fileObject.getAbsolutePath());
+			}
 			manager.addEntityRelations(entityRelations);
 			caches.put(fileObject.getAbsolutePath(), entityRelations);
 			logger.logMessage(LogLevel.INFO, "EntityRelation描述文件：[{}]加载成功。",

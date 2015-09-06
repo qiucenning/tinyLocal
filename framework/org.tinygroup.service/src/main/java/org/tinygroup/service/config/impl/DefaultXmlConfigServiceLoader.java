@@ -23,6 +23,8 @@
  */
 package org.tinygroup.service.config.impl;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -79,8 +81,14 @@ public class DefaultXmlConfigServiceLoader extends XmlConfigServiceLoader {
 			XStream xStream = XStreamFactory
 					.getXStream(Service.SERVICE_XSTREAM_PACKAGENAME);
 			ServiceComponents components = null;
-			components = (ServiceComponents) xStream.fromXML(file
-					.getInputStream());
+			InputStream inputStream = file
+					.getInputStream();
+			components = (ServiceComponents) xStream.fromXML(inputStream);
+			try {
+				inputStream.close();
+			} catch (IOException e) {
+				logger.errorMessage("关闭流时发生异常,文件路径:{}",e,file.getAbsolutePath());
+			}
 			list.add(components);
 			logger.logMessage(LogLevel.DEBUG, "添加ServiceComponents");
 		}

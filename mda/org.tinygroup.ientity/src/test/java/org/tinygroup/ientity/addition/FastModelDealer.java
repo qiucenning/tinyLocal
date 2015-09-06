@@ -25,6 +25,7 @@ package org.tinygroup.ientity.addition;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.tinygroup.commons.file.FileDealUtil;
 import org.tinygroup.entity.entitymodel.EntityModel;
@@ -114,7 +115,13 @@ public final class FastModelDealer {
 	private void dealModel(FileObject file) {
 		XStream stream = XStreamFactory.getXStream("entities");
 		EntityModel model = null;
-		model = (EntityModel) stream.fromXML(file.getInputStream());
+		InputStream inputStream = file.getInputStream();
+		model = (EntityModel) stream.fromXML(inputStream);
+		try {
+			inputStream.close();
+		} catch (IOException e) {
+			logger.errorMessage("关闭流时发生异常,文件路径:{}",e,file.getAbsolutePath());
+		}
 		// 为模型生成默认操作和视图
 		if (modelName == null || "".equals(modelName)) {
 			dealModel(stream, file, model);

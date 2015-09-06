@@ -23,6 +23,9 @@
  */
 package org.tinygroup.tinydb.fileresolver;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.tinygroup.fileresolver.impl.AbstractFileProcessor;
 import org.tinygroup.logger.LogLevel;
 import org.tinygroup.springutil.SpringUtil;
@@ -71,7 +74,13 @@ public class RelationFileProcessor  extends AbstractFileProcessor{
 			if(oldRelations!=null){
 				manager.removeRelationConfigs(oldRelations);
 			}	
-			Relations relations=(Relations) stream.fromXML(fileObject.getInputStream());
+			InputStream inputStream = fileObject.getInputStream();
+			Relations relations=(Relations) stream.fromXML(inputStream);
+			try {
+				inputStream.close();
+			} catch (IOException e) {
+				logger.errorMessage("关闭流时发生异常,文件路径:{}",e,fileObject.getAbsolutePath());
+			}
 			manager.addRelationConfigs(relations);
 			caches.put(fileObject.getAbsolutePath(), relations);
 			logger.logMessage(LogLevel.INFO, "加载数据库关联配置文件[{0}]结束",

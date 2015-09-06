@@ -23,6 +23,9 @@
  */
 package org.tinygroup.database.fileresolver;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.tinygroup.database.ProcessorManager;
 import org.tinygroup.database.config.processor.Processors;
 import org.tinygroup.database.util.DataBaseUtil;
@@ -65,8 +68,14 @@ public class ProcessorFileResolver extends AbstractFileProcessor {
 			if(oldProcessors!=null){
 				processorManager.removePocessors(oldProcessors);
 			}	
-			Processors processors = (Processors) stream.fromXML(fileObject
-					.getInputStream());
+			InputStream inputStream = fileObject
+					.getInputStream();
+			Processors processors = (Processors) stream.fromXML(inputStream);
+			try {
+				inputStream.close();
+			} catch (IOException e) {
+				logger.errorMessage("关闭流时发生异常,文件路径:{}",e,fileObject.getAbsolutePath());
+			}
 			processorManager.addPocessors(processors);
 			caches.put(fileObject.getAbsolutePath(), processors);
 			logger.logMessage(LogLevel.INFO, "读取database.processor文件{0}完毕",

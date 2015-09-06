@@ -23,6 +23,9 @@
  */
 package org.tinygroup.validate.fileresolver;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.tinygroup.fileresolver.impl.AbstractFileProcessor;
 import org.tinygroup.logger.LogLevel;
 import org.tinygroup.springutil.SpringUtil;
@@ -58,8 +61,14 @@ public class ValidateFileProcessor extends AbstractFileProcessor {
 			logger.logMessage(LogLevel.DEBUG, "正在加载xml校验配置文件[{0}]",
 					fileObject.getAbsolutePath());
 			try {
+				InputStream inputStream = fileObject.getInputStream();
 				ObjectValidators objectValidatorConfigs = (ObjectValidators) stream
-						.fromXML(fileObject.getInputStream());
+						.fromXML(inputStream);
+				try {
+					inputStream.close();
+				} catch (IOException e) {
+					logger.errorMessage("关闭流时发生异常,文件路径:{}",e,fileObject.getAbsolutePath());
+				}
 				validatorManager
 						.addObjectValidatorConfigs(objectValidatorConfigs);
 			} catch (Exception e) {

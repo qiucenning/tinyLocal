@@ -23,6 +23,9 @@
  */
 package org.tinygroup.mongodb.engine.loader;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.tinygroup.imda.ModelLoader;
 import org.tinygroup.logger.LogLevel;
 import org.tinygroup.logger.Logger;
@@ -54,8 +57,14 @@ public class MongoModelLoader implements ModelLoader {
 		logger.logMessage(LogLevel.INFO, "正在加载mongodb模型文件<{}>",
 				fileObject.getAbsolutePath());
 		XStream xstream = XStreamFactory.getXStream("mongodb");
-		MongoDBModel model = (MongoDBModel) xstream.fromXML(fileObject
-				.getInputStream());
+		InputStream inputStream = fileObject
+				.getInputStream();
+		MongoDBModel model = (MongoDBModel) xstream.fromXML(inputStream);
+		try {
+			inputStream.close();
+		} catch (IOException e) {
+			logger.errorMessage("关闭流时发生异常,文件路径:{}",e,fileObject.getAbsolutePath());
+		}
 		logger.logMessage(LogLevel.INFO, "mongodb模型文件<{}>加载完毕。",
 				fileObject.getAbsolutePath());
 		return model;

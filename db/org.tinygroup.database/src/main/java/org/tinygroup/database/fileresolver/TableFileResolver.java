@@ -23,6 +23,9 @@
  */
 package org.tinygroup.database.fileresolver;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.tinygroup.database.config.table.Tables;
 import org.tinygroup.database.table.TableProcessor;
 import org.tinygroup.database.util.DataBaseUtil;
@@ -65,8 +68,14 @@ public class TableFileResolver extends AbstractFileProcessor {
 			if(oldTables!=null){
 				tableProcessor.removeTables(oldTables);
 			}	
+			InputStream inputStream = fileObject.getInputStream();
 			Tables tables = (Tables) stream
-					.fromXML(fileObject.getInputStream());
+					.fromXML(inputStream);
+			try {
+				inputStream.close();
+			} catch (IOException e) {
+				logger.errorMessage("关闭流时发生异常,文件路径:{}",e,fileObject.getAbsolutePath());
+			}
 			tableProcessor.addTables(tables);
 			caches.put(fileObject.getAbsolutePath(), tables);
 			logger.logMessage(LogLevel.INFO, "加载table文件[{0}]结束",

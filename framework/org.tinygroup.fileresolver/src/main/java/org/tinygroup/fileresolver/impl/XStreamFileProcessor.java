@@ -23,6 +23,8 @@
  */
 package org.tinygroup.fileresolver.impl;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Array;
 import java.util.Collection;
 
@@ -73,8 +75,14 @@ public class XStreamFileProcessor extends AbstractFileProcessor {
 			logger.logMessage(LogLevel.INFO, "找到XStream配置文件[{0}]，并开始加载...",
 					fileObject.getAbsolutePath());
 			XStream loadXStream = XStreamFactory.getXStream();
+			InputStream inputStream = fileObject.getInputStream();
 			XStreamConfiguration xstreamConfiguration = (XStreamConfiguration) loadXStream
-					.fromXML(fileObject.getInputStream());
+					.fromXML(inputStream);
+			try {
+				inputStream.close();
+			} catch (IOException e) {
+				logger.errorMessage("关闭流时发生异常,文件路径:{}",e,fileObject.getAbsolutePath());
+			}
 			XStream xStream = XStreamFactory.getXStream(xstreamConfiguration
 					.getPackageName());
 

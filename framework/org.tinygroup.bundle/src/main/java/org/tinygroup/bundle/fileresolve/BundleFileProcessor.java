@@ -23,6 +23,9 @@
  */
 package org.tinygroup.bundle.fileresolve;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import com.thoughtworks.xstream.XStream;
 import org.tinygroup.bundle.BundleLoader;
 import org.tinygroup.bundle.BundleManager;
@@ -63,7 +66,13 @@ public class BundleFileProcessor extends AbstractFileProcessor {
     public void process(ClassLoader loader) {
         XStream stream = XStreamFactory.getXStream(BundleManager.BUNDLE_XSTREAM);
         for (FileObject fileObject : fileObjects) {
-            BundleDefine bundleDefine = (BundleDefine) stream.fromXML(fileObject.getInputStream());
+            InputStream inputStream = fileObject.getInputStream();
+			BundleDefine bundleDefine = (BundleDefine) stream.fromXML(inputStream);
+			try {
+				inputStream.close();
+			} catch (IOException e) {
+				logger.errorMessage("关闭流时发生异常,文件路径:{}",e,fileObject.getAbsolutePath());
+			}
             bundleManager.add(bundleDefine);
         }
     }

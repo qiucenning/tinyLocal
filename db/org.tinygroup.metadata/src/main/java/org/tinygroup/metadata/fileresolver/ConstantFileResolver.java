@@ -23,6 +23,9 @@
  */
 package org.tinygroup.metadata.fileresolver;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.tinygroup.fileresolver.impl.AbstractFileProcessor;
 import org.tinygroup.logger.LogLevel;
 import org.tinygroup.metadata.config.constants.Constants;
@@ -67,8 +70,14 @@ public class ConstantFileResolver extends AbstractFileProcessor {
 			if (oldConstants != null) {
 				constantProcessor.removeConstants(oldConstants);
 			}
-			Constants constants = (Constants) stream.fromXML(fileObject
-					.getInputStream());
+			InputStream inputStream = fileObject
+					.getInputStream();
+			Constants constants = (Constants) stream.fromXML(inputStream);
+			try {
+				inputStream.close();
+			} catch (IOException e) {
+				logger.errorMessage("关闭流时发生异常,文件路径:{}",e,fileObject.getAbsolutePath());
+			}
 			constantProcessor.addConstants(constants);
 			caches.put(fileObject.getAbsolutePath(), constants);
 			logger.logMessage(LogLevel.INFO, "加载const文件[{0}]结束",

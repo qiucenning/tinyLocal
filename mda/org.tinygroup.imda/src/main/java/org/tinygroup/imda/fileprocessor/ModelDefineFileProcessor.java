@@ -23,6 +23,9 @@
  */
 package org.tinygroup.imda.fileprocessor;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.tinygroup.fileresolver.impl.AbstractFileProcessor;
 import org.tinygroup.imda.ModelManager;
 import org.tinygroup.imda.config.ModelDefine;
@@ -74,8 +77,14 @@ public class ModelDefineFileProcessor extends AbstractFileProcessor {
 				if(oldModelDefine!=null){
 					manager.removeModelDefine(oldModelDefine);
 				}
+				InputStream inputStream = fileObject.getInputStream();
 				ModelDefine modelDefine = (ModelDefine) xStream
-						.fromXML(fileObject.getInputStream());
+						.fromXML(inputStream);
+				try {
+					inputStream.close();
+				} catch (IOException e) {
+					logger.errorMessage("关闭流时发生异常,文件路径:{}",e,fileObject.getAbsolutePath());
+				}
 				manager.addModelDefine(modelDefine);
 				caches.put(fileObject.getAbsolutePath(), modelDefine);
 				logger.logMessage(LogLevel.INFO, "ModelDefine描述文件：[{}]加载成功。",

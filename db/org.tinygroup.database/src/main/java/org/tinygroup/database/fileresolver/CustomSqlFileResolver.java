@@ -23,6 +23,9 @@
  */
 package org.tinygroup.database.fileresolver;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.tinygroup.database.config.customsql.CustomSqls;
 import org.tinygroup.database.customesql.CustomSqlProcessor;
 import org.tinygroup.database.util.DataBaseUtil;
@@ -61,8 +64,14 @@ public class CustomSqlFileResolver extends AbstractFileProcessor {
 		for (FileObject fileObject : changeList) {
 			logger.logMessage(LogLevel.INFO, "正在加载customsql文件[{0}]",
 					fileObject.getAbsolutePath());
-			CustomSqls customsqls = (CustomSqls) stream.fromXML(fileObject
-					.getInputStream());
+			InputStream inputStream = fileObject
+					.getInputStream();
+			CustomSqls customsqls = (CustomSqls) stream.fromXML(inputStream);
+			try {
+				inputStream.close();
+			} catch (IOException e) {
+				logger.errorMessage("关闭流时发生异常,文件路径:{}",e,fileObject.getAbsolutePath());
+			}
 			CustomSqls oldCustomsqls = (CustomSqls)caches.get(fileObject.getAbsolutePath());
 			if(oldCustomsqls!=null){
 				customSqlProcessor.removeCustomSqls(oldCustomsqls);

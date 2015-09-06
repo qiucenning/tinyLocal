@@ -23,6 +23,9 @@
  */
 package org.tinygroup.expression.fileresolver;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.tinygroup.expression.ExpressionConfigs;
 import org.tinygroup.expression.ExpressionManager;
 import org.tinygroup.fileresolver.impl.AbstractFileProcessor;
@@ -71,7 +74,13 @@ public class ExpressionFileProcesor extends AbstractFileProcessor {
 			if(oldExpressionConfigs!=null){
 				manager.removeExpressions(oldExpressionConfigs);
 			}
-			ExpressionConfigs expressions=(ExpressionConfigs) stream.fromXML(fileObject.getInputStream());
+			InputStream inputStream = fileObject.getInputStream();
+			ExpressionConfigs expressions=(ExpressionConfigs) stream.fromXML(inputStream);
+			try {
+				inputStream.close();
+			} catch (IOException e) {
+				logger.errorMessage("关闭流时发生异常,文件路径:{}",e,fileObject.getAbsolutePath());
+			}
 			manager.addExpressions(expressions);
 			caches.put(fileObject.getAbsolutePath(), expressions);
 			logger.logMessage(LogLevel.DEBUG, "加载表达式配置文件[{0}]结束",

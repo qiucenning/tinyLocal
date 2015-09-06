@@ -23,6 +23,9 @@
  */
 package org.tinygroup.dict.fileresolver;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.tinygroup.dict.DictLoader;
 import org.tinygroup.dict.DictManager;
 import org.tinygroup.dict.config.DictLoaderConfig;
@@ -59,8 +62,14 @@ public class DictLoadFileProcessor extends AbstractFileProcessor {
 		for (FileObject fileObject : fileObjects) {
 			logger.logMessage(LogLevel.INFO, "找到字典加载配置文件:[{}]",
 					fileObject.getAbsolutePath());
+			InputStream inputStream = fileObject.getInputStream();
 			DictLoaderConfigs configs = (DictLoaderConfigs) stream
-					.fromXML(fileObject.getInputStream());
+					.fromXML(inputStream);
+			try {
+				inputStream.close();
+			} catch (IOException e) {
+				logger.errorMessage("关闭流时发生异常,文件路径:{}",e,fileObject.getAbsolutePath());
+			}
 			for (DictLoaderConfig config : configs.getConfigs()) {
 				DictLoader dictLoader = SpringUtil
 						.getBean(config.getBeanName());

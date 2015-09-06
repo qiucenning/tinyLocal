@@ -23,6 +23,9 @@
  */
 package org.tinygroup.metadata.fileresolver;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.tinygroup.fileresolver.impl.AbstractFileProcessor;
 import org.tinygroup.logger.LogLevel;
 import org.tinygroup.metadata.bizdatatype.BusinessTypeProcessor;
@@ -65,8 +68,14 @@ public class BusinessTypeFileResolver extends AbstractFileProcessor {
 			if(oldBusinessTypes!=null){
 				businessTypeProcessor.removeBusinessTypes(oldBusinessTypes);
 			}
+			InputStream inputStream = fileObject.getInputStream();
 			BusinessTypes businessTypes = (BusinessTypes) stream
-					.fromXML(fileObject.getInputStream());
+					.fromXML(inputStream);
+			try {
+				inputStream.close();
+			} catch (IOException e) {
+				logger.errorMessage("关闭流时发生异常,文件路径:{}",e,fileObject.getAbsolutePath());
+			}
 			businessTypeProcessor.addBusinessTypes(businessTypes);
 			caches.put(fileObject.getAbsolutePath(), businessTypes);
 			logger.logMessage(LogLevel.INFO, "加载bizdatatype文件[{0}]结束",

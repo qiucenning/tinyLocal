@@ -23,6 +23,9 @@
  */
 package org.tinygroup.metadata.fileresolver;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.tinygroup.fileresolver.impl.AbstractFileProcessor;
 import org.tinygroup.logger.LogLevel;
 import org.tinygroup.metadata.config.errormessage.ErrorMessages;
@@ -66,8 +69,14 @@ public class ErrorMessageFileResolver extends AbstractFileProcessor {
 			if(oldErrorMessages!=null){
 				errorMessageProcessor.removeErrorMessages(oldErrorMessages);
 			}
+			InputStream inputStream = fileObject.getInputStream();
 			ErrorMessages errorMessages = (ErrorMessages) stream
-					.fromXML(fileObject.getInputStream());
+					.fromXML(inputStream);
+			try {
+				inputStream.close();
+			} catch (IOException e) {
+				logger.errorMessage("关闭流时发生异常,文件路径:{}",e,fileObject.getAbsolutePath());
+			}
 			errorMessageProcessor.addErrorMessages(errorMessages);
 			caches.put(fileObject.getAbsolutePath(), errorMessages);
 			logger.logMessage(LogLevel.INFO, "加载error文件[{0}]结束",

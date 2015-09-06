@@ -23,6 +23,9 @@
  */
 package org.tinygroup.entity.engine.entity;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.tinygroup.database.config.table.Table;
 import org.tinygroup.database.table.TableProcessor;
 import org.tinygroup.entity.entitymodel.EntityModel;
@@ -52,8 +55,14 @@ public class EntityModelLoader implements ModelLoader {
 		logger.logMessage(LogLevel.INFO, "正在加载实体模型文件<{}>",
 				fileObject.getAbsolutePath());
 		XStream xstream = XStreamFactory.getXStream("entities");
-		EntityModel entityModel = (EntityModel) xstream.fromXML(fileObject
-				.getInputStream());
+		InputStream inputStream = fileObject
+				.getInputStream();
+		EntityModel entityModel = (EntityModel) xstream.fromXML(inputStream);
+		try {
+			inputStream.close();
+		} catch (IOException e) {
+			logger.errorMessage("关闭流时发生异常,文件路径:{}",e,fileObject.getAbsolutePath());
+		}
 		addTableWithModel(entityModel);
 		logger.logMessage(LogLevel.INFO, "实体模型文件<{}>加载完毕。",
 				fileObject.getAbsolutePath());

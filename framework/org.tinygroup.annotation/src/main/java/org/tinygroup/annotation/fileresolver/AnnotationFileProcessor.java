@@ -23,6 +23,9 @@
  */
 package org.tinygroup.annotation.fileresolver;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.tinygroup.annotation.AnnotationExcuteManager;
 import org.tinygroup.annotation.config.AnnotationClassMatchers;
 import org.tinygroup.fileresolver.impl.AbstractFileProcessor;
@@ -72,9 +75,15 @@ public class AnnotationFileProcessor extends AbstractFileProcessor {
 			if(oldMatchers!=null){
 				manager.removeAnnotationClassMatchers(oldMatchers);
 			}
+			InputStream inputStream = fileObject.getInputStream();
 			AnnotationClassMatchers matchers = (AnnotationClassMatchers) stream
-					.fromXML(fileObject.getInputStream());
+					.fromXML(inputStream);
 			manager.addAnnotationClassMatchers(matchers);
+			try {
+				inputStream.close();
+			} catch (IOException e) {
+				logger.errorMessage("关闭流时发生异常,文件路径:{}",e,fileObject.getAbsolutePath());
+			}
 			caches.put(fileObject.getAbsolutePath(), matchers);
 			logger.logMessage(LogLevel.INFO, "加载注解配置文件[{0}]结束",
 					fileObject.getAbsolutePath());

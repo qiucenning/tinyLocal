@@ -23,6 +23,9 @@
  */
 package org.tinygroup.flow.fileresolver;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.tinygroup.fileresolver.FileResolver;
 import org.tinygroup.fileresolver.impl.AbstractFileProcessor;
 import org.tinygroup.flow.FlowExecutor;
@@ -74,8 +77,14 @@ public class FlowComponentProcessor extends AbstractFileProcessor {
 			if(oldDefines!=null){
 				flowExecutor.removeComponents(oldDefines);
 			}
+			InputStream inputStream = fileObject.getInputStream();
 			ComponentDefines components = (ComponentDefines) stream
-					.fromXML(fileObject.getInputStream());
+					.fromXML(inputStream);
+			try {
+				inputStream.close();
+			} catch (IOException e) {
+				logger.errorMessage("关闭流时发生异常,文件路径:{}",e,fileObject.getAbsolutePath());
+			}
 			flowExecutor.addComponents(components);
 			caches.put(fileObject.getAbsolutePath(), components);
 			logger.logMessage(LogLevel.INFO, "读取逻辑组件fc文件[{0}]结束",

@@ -23,6 +23,8 @@
  */
 package org.tinygroup.service.fileresolver;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -79,8 +81,14 @@ public class XmlServiceFileProcessor extends XmlConfigServiceLoader implements
 				if(oldComponents!=null){
 					list.remove(oldComponents);
 				}	
+				InputStream inputStream = fileObject.getInputStream();
 				ServiceComponents components = (ServiceComponents) stream
-						.fromXML(fileObject.getInputStream());
+						.fromXML(inputStream);
+				try {
+					inputStream.close();
+				} catch (IOException e) {
+					logger.errorMessage("关闭流时发生异常,文件路径:{}",e,fileObject.getAbsolutePath());
+				}
 				list.add(components);
 				caches.put(fileObject.getAbsolutePath(), components);
 			} catch (Exception e) {

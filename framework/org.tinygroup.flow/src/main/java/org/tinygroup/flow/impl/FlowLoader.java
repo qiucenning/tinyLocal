@@ -23,6 +23,9 @@
  */
 package org.tinygroup.flow.impl;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.tinygroup.flow.FlowExecutor;
 import org.tinygroup.flow.config.Flow;
 import org.tinygroup.logger.LogLevel;
@@ -82,7 +85,13 @@ public class FlowLoader {
 			XStream xStream = XStreamFactory
 					.getXStream(FlowExecutor.FLOW_XSTREAM_PACKAGENAME);
 			Flow flow = null;
-			flow = (Flow) xStream.fromXML(file.getInputStream());
+			InputStream inputStream = file.getInputStream();
+			flow = (Flow) xStream.fromXML(inputStream);
+			try {
+				inputStream.close();
+			} catch (IOException e) {
+				logger.errorMessage("关闭流时发生异常,文件路径:{}",e,file.getAbsolutePath());
+			}
 			executor.addFlow(flow);
 			logger.logMessage(LogLevel.DEBUG, "添加Flow[id:{0}]", flow.getId());
 		}

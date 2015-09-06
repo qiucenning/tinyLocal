@@ -23,6 +23,9 @@
  */
 package org.tinygroup.metadata.fileresolver;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.tinygroup.fileresolver.impl.AbstractFileProcessor;
 import org.tinygroup.logger.LogLevel;
 import org.tinygroup.metadata.config.stddatatype.StandardTypes;
@@ -65,8 +68,14 @@ public class StandardTypeFileResolver extends AbstractFileProcessor {
 			if (oldStandardTypes!=null) {
 				standardDataTypeProcessor.removeStandardTypes(oldStandardTypes);
 			}
+			InputStream inputStream = fileObject.getInputStream();
 			StandardTypes standardTypes = (StandardTypes) stream
-					.fromXML(fileObject.getInputStream());
+					.fromXML(inputStream);
+			try {
+				inputStream.close();
+			} catch (IOException e) {
+				logger.errorMessage("关闭流时发生异常,文件路径:{}",e,fileObject.getAbsolutePath());
+			}
 			standardDataTypeProcessor.addStandardTypes(standardTypes);
 			caches.put(fileObject.getAbsolutePath(), standardTypes);
 			logger.logMessage(LogLevel.INFO, "加载datatype文件[{0}]结束",
