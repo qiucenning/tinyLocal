@@ -135,7 +135,7 @@ public class FileObjectImpl extends AbstractFileObject {
 			children = new ArrayList<FileObject>();
 			for (File subfile : subFiles) {
 				FileObject fileObject = null;
-				if (subfile.getName().endsWith(".jar")) {
+				if (subfile.getName().endsWith(".jar")&&!subfile.isDirectory()) {
 					fileObject = VFS.resolveFile(subfile.getAbsolutePath());
 				} else {
 					fileObject = new FileObjectImpl(schemaProvider, subfile);
