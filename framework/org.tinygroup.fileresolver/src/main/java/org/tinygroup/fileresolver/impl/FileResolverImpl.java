@@ -231,7 +231,9 @@ public class FileResolverImpl implements FileResolver {
                 path = path.substring(0, path.length() - "META-INF/MANIFEST.MF".length() - 1);
                 path = path.substring(path.indexOf(':') + 1);
             }
+            logger.logMessage(LogLevel.INFO, "解析路径{}",path);
             FileObject fileObject = VFS.resolveFile(path);
+            logger.logMessage(LogLevel.INFO, "解析路径完成{},文件:{}",path,fileObject.getAbsolutePath());
             if (includePathPatternMap != null && includePathPatternMap.size() > 0) {
                 if (isInclude(fileObject)) {
                     logger.logMessage(LogLevel.INFO, "扫描到jar文件<{}>。", path);

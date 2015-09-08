@@ -31,7 +31,7 @@ public class JarSchemaProvider implements SchemaProvider {
 	public static final String JAR = ".jar";
 	public static final String JAR_PROTOCAL = "jar:";
 	public static final String WAS_JAR = "wsjar:";
-
+//	private static final Logger logger = LoggerFactory.getLogger(JarSchemaProvider.class);
 	public FileObject resolver(String resource) {
 		if (resource.startsWith(JAR_PROTOCAL)) {
 			resource = resource.substring(JAR_PROTOCAL.length());
@@ -44,7 +44,11 @@ public class JarSchemaProvider implements SchemaProvider {
 		if (resource.startsWith(FileSchemaProvider.FILE_PROTOCAL)) {
 			resource = resource.substring(FileSchemaProvider.FILE_PROTOCAL
 					.length());
+		}else if(resource.startsWith(ZipSchemaProvider.ZIP_PROTOCAL)){
+			resource = resource.substring(ZipSchemaProvider.ZIP_PROTOCAL
+					.length());
 		}
+//		logger.logMessage(LogLevel.INFO, "jar文件资源路径:{}",resource);
 		return new JarFileObject(this, resource);
 	}
 

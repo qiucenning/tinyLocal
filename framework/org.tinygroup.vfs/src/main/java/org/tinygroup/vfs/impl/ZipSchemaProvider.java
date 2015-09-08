@@ -38,7 +38,7 @@ public class ZipSchemaProvider implements SchemaProvider {
 	
 	public static final String ZIP = ".zip";
 	public static final String ZIP_PROTOCAL = "zip:"; 
-
+//	private static final Logger logger = LoggerFactory.getLogger(ZipSchemaProvider.class);
 	public boolean isMatch(String resource) {
 		String lowerCase = resource.toLowerCase();
 		return lowerCase.startsWith(ZIP_PROTOCAL) || lowerCase.endsWith(ZIP);
@@ -57,6 +57,7 @@ public class ZipSchemaProvider implements SchemaProvider {
 		if (resource.startsWith(FileSchemaProvider.FILE_PROTOCAL)) {
 	        resource = resource.substring(FileSchemaProvider.FILE_PROTOCAL.length());
 	     }
+//		logger.logMessage(LogLevel.INFO, "jar文件资源路径:{}",resource);
 		return new ZipFileObject(this, resource);
 	}
 

@@ -23,10 +23,14 @@
  */
 package org.tinygroup.vfs.impl;
 
-import org.tinygroup.vfs.FileObject;
-import org.tinygroup.vfs.SchemaProvider;
-
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -37,8 +41,11 @@ import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
 import java.util.jar.JarOutputStream;
 
-public class JarFileObject extends AbstractFileObject {
+import org.tinygroup.vfs.FileObject;
+import org.tinygroup.vfs.SchemaProvider;
 
+public class JarFileObject extends AbstractFileObject {
+//	private static final Logger logger = LoggerFactory.getLogger(JarFileObject.class);
     private List<FileObject> children;
     private JarFile jarFile = null;
     private File file = null;
@@ -49,6 +56,7 @@ public class JarFileObject extends AbstractFileObject {
         super(schemaProvider);
         try {
             this.file = new File(resource);
+//            logger.logMessage(LogLevel.INFO, "JarFileObject对应的实际文件为:{}",file.getAbsolutePath());
             if (file.exists()) {
                 this.jarFile = new JarFile(resource);
             }

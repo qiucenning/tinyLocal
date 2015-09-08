@@ -23,19 +23,18 @@
  */
 package org.tinygroup.vfs.impl;
 
-import org.tinygroup.exception.TinySysRuntimeException;
-import org.tinygroup.vfs.FileObject;
-import org.tinygroup.vfs.SchemaProvider;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.tinygroup.exception.TinySysRuntimeException;
+import org.tinygroup.vfs.FileObject;
+import org.tinygroup.vfs.SchemaProvider;
 
 /**
  * 功能说明:URL资源
