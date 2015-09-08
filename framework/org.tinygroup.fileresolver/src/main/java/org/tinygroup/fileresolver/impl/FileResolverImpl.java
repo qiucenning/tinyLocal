@@ -23,6 +23,17 @@
  */
 package org.tinygroup.fileresolver.impl;
 
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.tinygroup.commons.order.OrderUtil;
 import org.tinygroup.commons.tools.ClassPathUtil;
 import org.tinygroup.config.ConfigurationManager;
@@ -36,13 +47,7 @@ import org.tinygroup.logger.LoggerFactory;
 import org.tinygroup.vfs.FileObject;
 import org.tinygroup.vfs.VFS;
 import org.tinygroup.vfs.impl.FileSchemaProvider;
-import org.tinygroup.vfs.impl.JarSchemaProvider;
 import org.tinygroup.xmlparser.node.XmlNode;
-
-import java.net.URL;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * 功能说明: 文件搜索器默认实现
@@ -118,7 +123,12 @@ public class FileResolverImpl implements FileResolver {
             logger.logMessage(LogLevel.INFO, "正在进行全路径扫描....");
             resolverScanPath();
             for (FileProcessor fileProcessor : fileProcessorList) {
-                fileProcessor.process();
+            	try {
+            		 fileProcessor.process();
+				} catch (Exception e) {
+					logger.errorMessage("fileProcessor处理异常:{}",e,fileProcessor.getClass().getName());
+				}
+               
             }
             logger.logMessage(LogLevel.INFO, "全路径扫描完成。");
         }
@@ -231,9 +241,9 @@ public class FileResolverImpl implements FileResolver {
                 path = path.substring(0, path.length() - "META-INF/MANIFEST.MF".length() - 1);
                 path = path.substring(path.indexOf(':') + 1);
             }
-            logger.logMessage(LogLevel.INFO, "解析路径{}",path);
+//            logger.logMessage(LogLevel.INFO, "解析路径{}",path);
             FileObject fileObject = VFS.resolveFile(path);
-            logger.logMessage(LogLevel.INFO, "解析路径完成{},文件:{}",path,fileObject.getAbsolutePath());
+//            logger.logMessage(LogLevel.INFO, "解析路径完成{},文件:{}",path,fileObject.getAbsolutePath());
             if (includePathPatternMap != null && includePathPatternMap.size() > 0) {
                 if (isInclude(fileObject)) {
                     logger.logMessage(LogLevel.INFO, "扫描到jar文件<{}>。", path);
@@ -374,8 +384,10 @@ public class FileResolverImpl implements FileResolver {
      * @param fileObject
      */
     private synchronized void processFile(FileObject fileObject) {
+//    	logger.logMessage(LogLevel.DEBUG, "开始使用fileProcessorList处理文件:{}:{}",fileObject.getAbsolutePath(),fileProcessorList.size());
         if (fileObject.isExist()) {
             for (FileProcessor fileProcessor : fileProcessorList) {
+//            	logger.logMessage(LogLevel.DEBUG, "开始使用fileProcessor:{}处理",fileProcessor.getClass().getName());
                 if (fileProcessor.isMatch(fileObject)) {
                     String absolutePath = fileObject.getAbsolutePath();
                     Long lastModifiedTime = fileDateMap.get(absolutePath);
@@ -393,8 +405,10 @@ public class FileResolverImpl implements FileResolver {
                     }
                     break;// 已经找到文件处理器，就退出
                 }
+//                logger.logMessage(LogLevel.DEBUG, "使用fileProcessor:{}处理完毕",fileProcessor.getClass().getName());
             }
         }
+//        logger.logMessage(LogLevel.DEBUG, "使用fileProcessorList处理文件:{}完毕",fileObject.getAbsolutePath());
     }
 
     private void noChangeFile(FileObject fileObject, FileProcessor fileProcessor) {
