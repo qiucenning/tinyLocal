@@ -23,6 +23,16 @@
  */
 package org.tinygroup.weblayer;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.util.Enumeration;
+
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+
 import org.tinygroup.application.Application;
 import org.tinygroup.application.impl.ApplicationDefault;
 import org.tinygroup.commons.io.StreamUtil;
@@ -40,16 +50,6 @@ import org.tinygroup.weblayer.listener.ServletContextHolder;
 import org.tinygroup.weblayer.listener.TinyServletContext;
 import org.tinygroup.xmlparser.node.XmlNode;
 import org.tinygroup.xmlparser.parser.XmlStringParser;
-
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.util.Enumeration;
-import java.util.List;
 
 public class ApplicationStartupListener implements ServletContextListener {
     private static Logger logger = LoggerFactory.getLogger(ApplicationStartupListener.class);
@@ -109,6 +109,7 @@ public class ApplicationStartupListener implements ServletContextListener {
                 loadSpringBeans(applicationConfig);
             } catch (Exception e) {
                 logger.errorMessage("载入应用配置信息时出错，错误原因：{}！", e, e.getMessage());
+                throw new RuntimeException(e);
             }
             application.start();
         }

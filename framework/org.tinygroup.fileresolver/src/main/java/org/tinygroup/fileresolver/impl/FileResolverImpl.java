@@ -123,12 +123,7 @@ public class FileResolverImpl implements FileResolver {
             logger.logMessage(LogLevel.INFO, "正在进行全路径扫描....");
             resolverScanPath();
             for (FileProcessor fileProcessor : fileProcessorList) {
-            	try {
             		 fileProcessor.process();
-				} catch (Exception e) {
-					logger.errorMessage("fileProcessor处理异常:{}",e,fileProcessor.getClass().getName());
-				}
-               
             }
             logger.logMessage(LogLevel.INFO, "全路径扫描完成。");
         }
