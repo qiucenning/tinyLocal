@@ -13,5 +13,6 @@
     <module>org.tinygroup.jspengine</module>
     <module>org.tinygroup.dbfilter</module>
     <module>org.tinygroup.uiengine</module>
+    <module>org.tinygroup.webservice</module>
   </modules>
 </project>
