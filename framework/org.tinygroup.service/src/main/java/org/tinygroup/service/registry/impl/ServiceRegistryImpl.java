@@ -47,6 +47,9 @@ public class ServiceRegistryImpl implements ServiceRegistry {
 			.getLogger(ServiceRegistryImpl.class);
 
 	public void registeService(ServiceRegistryItem serviceRegistryItem) {
+		if(serviceIdMap.containsKey(serviceRegistryItem.getServiceId())){
+			throw new RuntimeException("服务:"+serviceRegistryItem.getServiceId()+"已存在，不允许存在相同id服务");
+		}
 		logger.logMessage(LogLevel.INFO, "添加服务[serviceId:{0}]",
 				serviceRegistryItem.getServiceId());
 		serviceIdMap.put(serviceRegistryItem.getServiceId(),
