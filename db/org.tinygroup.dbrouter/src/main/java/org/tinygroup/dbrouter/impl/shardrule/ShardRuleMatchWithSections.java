@@ -15,9 +15,12 @@
  */
 package org.tinygroup.dbrouter.impl.shardrule;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.tinygroup.dbrouter.config.Partition;
+import org.tinygroup.jsqlparser.expression.BinaryExpression;
 import org.tinygroup.jsqlparser.expression.Expression;
 import org.tinygroup.jsqlparser.expression.JdbcParameter;
 import org.tinygroup.jsqlparser.expression.LongValue;
@@ -37,7 +40,8 @@ import org.tinygroup.jsqlparser.statement.update.Update;
 
 public class ShardRuleMatchWithSections {
 
-    protected List<Section> sections;
+    private static final String PARAMETER_SHIFT = "parameter_shift";
+	protected List<Section> sections;
     protected String tableName;
     protected String fieldName;
     protected Partition partition;
@@ -89,21 +93,31 @@ public class ShardRuleMatchWithSections {
     public boolean updateMatch(Statement statement) {
         Update update = (Update) statement;
         List<Expression> expressions = update.getExpressions();
-        int paramIndex = 0;
+        Map<String, Integer> shiftMap=new HashMap<String, Integer>();
+        shiftMap.put(PARAMETER_SHIFT, 0);
         for (Expression expression : expressions) {
-            if (expression instanceof JdbcParameter) {
-                paramIndex++;
-            }
+            shiftParameter(expression, shiftMap);
         }
         List<Table> tables = update.getTables();
         if (tables != null) {
             for (Table table : tables) {
                 if (tableName.equalsIgnoreCase(table.getName())) {
-                    return getWhereExpression(paramIndex, update.getWhere(), partition, preparedParams);
+                    return getWhereExpression(shiftMap.get(PARAMETER_SHIFT), update.getWhere(), partition, preparedParams);
                 }
             }
         }
         return false;
+    }
+    
+    private void shiftParameter(Expression expression,Map<String, Integer> shiftMap){
+    	if(expression instanceof JdbcParameter){
+    		int paramIndex=shiftMap.get(PARAMETER_SHIFT);
+    		shiftMap.put(PARAMETER_SHIFT, ++paramIndex);
+    	}else if(expression instanceof BinaryExpression){
+    		BinaryExpression binaryExpression=(BinaryExpression)expression;
+        	Expression rightExpression=binaryExpression.getRightExpression();
+        	shiftParameter(rightExpression, shiftMap);
+    	}
     }
 
     public boolean deleteMatch(Statement statement) {

@@ -29,8 +29,7 @@ public class ConditionMatch {
 	private String fieldName;
 
 	public ConditionMatch(int paramIndex, String fieldName,
-			ShardRuleMatchWithSections sectionAndHash,
-			Object[] preparedParams) {
+			ShardRuleMatchWithSections sectionAndHash, Object[] preparedParams) {
 		super();
 		this.paramIndex = paramIndex;
 		this.preparedParams = preparedParams;
@@ -82,4 +81,5 @@ public class ConditionMatch {
 			dealMatchFieldValue(rightExpression, values);
 		}
 	}
+
 }

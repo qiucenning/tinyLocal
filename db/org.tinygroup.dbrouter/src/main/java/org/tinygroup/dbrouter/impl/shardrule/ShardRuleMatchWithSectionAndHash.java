@@ -38,7 +38,7 @@ public class ShardRuleMatchWithSectionAndHash extends ShardRuleMatchWithSections
 			String tableName, String targetTableName,
 			ConsistentHash<String> consistentHash, String fieldName,
 			String expression, Partition partition, Object[] preparedParams) {
-		super(sections, targetTableName, fieldName, partition, preparedParams);
+		super(sections, tableName, fieldName, partition, preparedParams);
 		this.targetTableName = (null == targetTableName || ""
 				.equals(targetTableName.trim())) ? tableName : targetTableName;
 		this.consistentHash = consistentHash;
