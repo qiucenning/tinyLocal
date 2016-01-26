@@ -16,6 +16,7 @@
 package org.tinygroup.nettyremote.impl;
 
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
@@ -25,12 +26,14 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.serialization.ClassResolvers;
 import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
+import io.netty.util.concurrent.Future;
+
+import java.io.IOException;
+
 import org.tinygroup.logger.LogLevel;
 import org.tinygroup.logger.Logger;
 import org.tinygroup.logger.LoggerFactory;
 import org.tinygroup.nettyremote.Server;
-
-import java.io.IOException;
 
 public class ServerImpl implements Server {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ServerImpl.class);
@@ -39,7 +42,7 @@ public class ServerImpl implements Server {
 	private EventLoopGroup bossGroup = new NioEventLoopGroup();
 	private EventLoopGroup workerGroup = new NioEventLoopGroup();
 	private int localPort;
-
+	private ChannelFuture f;
 	public ServerImpl(int localPort) {
 		this.localPort = localPort;
 
@@ -73,14 +76,34 @@ public class ServerImpl implements Server {
 		b.group(bossGroup, workerGroup);
 		init(b);
 		// 绑定端口，同步等待成功
-		b.bind(localPort).sync();
+		f =b.bind(localPort).sync();
 	}
 
 	public void stop() {
 		LOGGER.logMessage(LogLevel.INFO, "关闭服务端");
+		if (f != null) {
+			f.channel().closeFuture();
+		}
 		setStart(false);
-		bossGroup.shutdownGracefully();
-		workerGroup.shutdownGracefully();
+		Future bg = null;
+		try {
+			bg = bossGroup.shutdownGracefully();
+		} catch (Exception e) {
+			LOGGER.errorMessage("关闭服务端时发生异常", e);
+		}
+		Future wg = null;
+		try {
+			wg = workerGroup.shutdownGracefully();
+		} catch (Exception e) {
+			LOGGER.errorMessage("关闭服务端时发生异常", e);
+		}
+		try {
+			bg.await();
+			wg.await();
+		} catch (InterruptedException ignore) {
+			LOGGER.logMessage(LogLevel.INFO, "等待EventLoopGroup shutdownGracefully中断");
+		}
+		LOGGER.logMessage(LogLevel.INFO, "关闭服务端完成");
 	}
 
 	class ServerThread extends Thread {

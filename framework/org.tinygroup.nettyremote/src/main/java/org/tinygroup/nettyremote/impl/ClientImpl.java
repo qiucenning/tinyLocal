@@ -26,6 +26,12 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.serialization.ClassResolvers;
 import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
+import io.netty.util.concurrent.Future;
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import org.tinygroup.logger.LogLevel;
 import org.tinygroup.logger.Logger;
 import org.tinygroup.logger.LoggerFactory;
@@ -33,12 +39,9 @@ import org.tinygroup.nettyremote.Client;
 import org.tinygroup.nettyremote.DisconnectCallBack;
 import org.tinygroup.nettyremote.Exception.TinyRemoteConnectException;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
 public class ClientImpl implements Client {
-	private static final Logger LOGGER = LoggerFactory.getLogger(ClientImpl.class);
+	private static final Logger LOGGER = LoggerFactory
+			.getLogger(ClientImpl.class);
 	private ScheduledExecutorService executor = Executors
 			.newScheduledThreadPool(1);
 	private EventLoopGroup group = new NioEventLoopGroup();
@@ -68,26 +71,26 @@ public class ClientImpl implements Client {
 	}
 
 	public void write(Object o) {
-		future.channel().writeAndFlush(o);
+		 future.channel().writeAndFlush(o);
 	}
 
 	private void reConnect() {
-		if(executor.isShutdown()){
-			return;
-		}
-		// 所有资源释放完成之后，清空资源，再次发起重连操作
-		executor.execute(new Runnable() {
-			public void run() {
-				try {
-					TimeUnit.SECONDS.sleep(reConnectInterval);
-					LOGGER.logMessage(LogLevel.INFO, "开始重连服务端{0}:{1}",
-							remoteHost, remotePort);
-					connect(remotePort, remoteHost);// 发起重连操作
-				} catch (InterruptedException e) {
-					//do nothing
+		if (!executor.isShutdown()) {
+			// 所有资源释放完成之后，清空资源，再次发起重连操作
+			executor.execute(new Runnable() {
+				public void run() {
+					try {
+						TimeUnit.SECONDS.sleep(reConnectInterval);
+						LOGGER.logMessage(LogLevel.INFO, "开始重连服务端{0}:{1}",
+								remoteHost, remotePort);
+						connect(remotePort, remoteHost);// 发起重连操作
+					} catch (InterruptedException e) {
+						// do nothing
+					}
 				}
-			}
-		});
+			});
+		}
+
 	}
 
 	private void connect(int port, String host) {
@@ -106,11 +109,11 @@ public class ClientImpl implements Client {
 						+ remotePort + "发生异常", e);
 			}
 		} finally {
-			if (reConnect&&start) {
+			if (reConnect && start) {
 				reConnect();
 			}
 		}
-		if(callBack!=null){
+		if (callBack != null) {
 			callBack.call();
 		}
 	}
@@ -146,11 +149,25 @@ public class ClientImpl implements Client {
 	public void stop() {
 		LOGGER.logMessage(LogLevel.INFO, "关闭客户端");
 		if (reConnect == true) {
-			executor.shutdown();
+			reConnect = false;
+			executor.shutdownNow();
 		}
 		start = false;
-		group.shutdownGracefully();
+		Future wg = null;
+		try {
+			wg = group.shutdownGracefully();
+		} catch (Exception e) {
+			LOGGER.errorMessage("关闭Client时出错", e);
+		}
+
+		try {
+			wg.await();
+		} catch (InterruptedException e) {
+			LOGGER.logMessage(LogLevel.INFO, "等待EventLoopGroup shutdownGracefully中断");
+		}
+
 		setReady(false);
+		LOGGER.logMessage(LogLevel.INFO, "关闭客户端完成");
 	}
 
 	public void doReady() {
@@ -186,10 +203,8 @@ public class ClientImpl implements Client {
 		this.remoteHost = remoteHost;
 	}
 
-	
 	public void setCallBack(DisconnectCallBack callBack) {
 		this.callBack = callBack;
 	}
-	
-	
+
 }
