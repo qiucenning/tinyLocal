@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -45,6 +44,7 @@ import org.tinygroup.event.central.Node;
 import org.tinygroup.logger.LogLevel;
 import org.tinygroup.logger.Logger;
 import org.tinygroup.logger.LoggerFactory;
+import org.tinygroup.xmlparser.node.XmlNode;
 
 /**
  * 当服务执行远程调用时 如果有多个远程处理器可用，则根据配置的EventProcessorChoose choose进行调用
@@ -56,9 +56,11 @@ import org.tinygroup.logger.LoggerFactory;
 public class CEPCoreImpl implements CEPCore {
 	private static final Logger LOGGER = LoggerFactory
 			.getLogger(CEPCoreImpl.class);
+	private static final String ASYN_TAG = "asyn-thread-pool-config";
+	private static final String ASYN_POOL_ATTRIBUTE = "bean";
 	private Map<String, List<EventProcessor>> serviceIdMap = new HashMap<String, List<EventProcessor>>();
 	// 服务版本，每次注册注销都会使其+1;
-	ExecutorService executor = Executors.newCachedThreadPool();
+	ExecutorService executor = null;
 	private static int serviceVersion = 0;
 	/**
 	 * 存放所有的EventProcessor
@@ -274,7 +276,7 @@ public class CEPCoreImpl implements CEPCore {
 			try {
 				// remote处理
 				// eventProcessor.process(event);
-				deal(eventProcessor, event);
+				dealRemote(eventProcessor, event);
 			} catch (RuntimeException e) {
 				dealException(e, event);
 				throw e;
@@ -285,8 +287,20 @@ public class CEPCoreImpl implements CEPCore {
 		// 后置Aop
 		aopMananger.afterHandle(event);
 	}
+	
+	private void dealRemote(EventProcessor eventProcessor, Event event) {
+		LOGGER.logMessage(LogLevel.DEBUG, "请求指定的执行处理器为:{0}",
+				eventProcessor.getId());
+		Context oldContext = event.getServiceRequest().getContext();
+		ServiceParamUtil.changeEventContext(event, this, Thread.currentThread()
+				.getContextClassLoader());
+		eventProcessor.process(event);
+		ServiceParamUtil.resetEventContext(event, this, oldContext);
+	}
 
 	private void deal(EventProcessor eventProcessor, Event event) {
+		LOGGER.logMessage(LogLevel.DEBUG, "请求指定的执行处理器为:{0}",
+				eventProcessor.getId());
 		Context oldContext = event.getServiceRequest().getContext();
 		ServiceParamUtil.changeEventContext(event, this, Thread.currentThread()
 				.getContextClassLoader());
@@ -297,7 +311,14 @@ public class CEPCoreImpl implements CEPCore {
 			// q调整为线程池
 			SynchronousDeal thread = new SynchronousDeal(eventProcessor, e);
 			// thread.start();
-			executor.execute(thread);
+			if (!getExecutorService().isShutdown()) {
+				getExecutorService().execute(thread);
+				LOGGER.logMessage(LogLevel.INFO, "已开启异步请求{}执行线程",
+						event.getEventId());
+			} else {
+				LOGGER.logMessage(LogLevel.INFO, "异步请求{}线程池已关闭，直接返回");
+				return;
+			}
 
 		} else {
 			eventProcessor.process(event);
@@ -447,6 +468,11 @@ public class CEPCoreImpl implements CEPCore {
 		if (operator != null) {
 			operator.stopCEPCore(this);
 		}
+		try {
+			getExecutorService().shutdown();
+		} catch (Exception e) {
+			LOGGER.errorMessage("关闭CEPCore异步线程池时发生异常", e);
+		}
 	}
 
 	public List<ServiceInfo> getServiceInfos() {
@@ -544,5 +570,43 @@ public class CEPCoreImpl implements CEPCore {
 
 	public int getServiceInfosVersion() {
 		return serviceVersion;
+	}
+
+	public void setConfig(XmlNode config) {
+		parseAsynPool(config);
+	}
+	private void parseAsynPool(XmlNode appConfig) {
+		String configBean = ThreadPoolConfig.DEFAULT_THREADPOOL;
+		if(appConfig==null){
+			LOGGER.logMessage(LogLevel.WARN, "未配置异步服务线程池config bean,使用默认配置bean:{}",ThreadPoolConfig.DEFAULT_THREADPOOL);
+		}else if (appConfig.getSubNode(ASYN_TAG) == null) {
+			LOGGER.logMessage(LogLevel.WARN, "未配置异步服务线程池节点：{}" , ASYN_TAG);
+		}else{
+			configBean = appConfig.getSubNode(ASYN_TAG)
+					.getAttribute(ASYN_POOL_ATTRIBUTE);
+		}
+		if (StringUtil.isBlank(configBean)) {
+			configBean = ThreadPoolConfig.DEFAULT_THREADPOOL;
+			LOGGER.logMessage(LogLevel.WARN, "未配置异步服务线程池config bean,使用默认配置bean:{}",ThreadPoolConfig.DEFAULT_THREADPOOL);
+		}
+		initThreadPool(configBean);
+	}
+	private  synchronized void initThreadPool(String configBean) {
+		
+		if(executor!=null){
+			return;
+		}
+		ThreadPoolConfig poolConfig = BeanContainerFactory.getBeanContainer(
+				this.getClass().getClassLoader()).getBean(configBean);
+		executor = ThreadPoolFactory.getThreadPoolExecutor(poolConfig);
+	}
+
+	private ExecutorService getExecutorService(){
+		if(executor==null){
+			LOGGER.logMessage(LogLevel.WARN, "未配置异步服务线程池config bean,使用默认配置bean:{}",ThreadPoolConfig.DEFAULT_THREADPOOL);
+			initThreadPool(ThreadPoolConfig.DEFAULT_THREADPOOL);
+			
+		}
+		return executor;
 	}
 }

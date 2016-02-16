@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.tinygroup.event.Event;
 import org.tinygroup.event.ServiceInfo;
+import org.tinygroup.xmlparser.node.XmlNode;
 
 public interface CEPCore extends Remote {
 	String CEP_CORE_BEAN = "cepcore";
@@ -86,5 +87,6 @@ public interface CEPCore extends Remote {
 	void addEventProcessorRegisterTrigger(EventProcessorRegisterTrigger trigger);
 
 	void refreshEventProcessors();
-
+	
+	void setConfig(XmlNode config);
 }
