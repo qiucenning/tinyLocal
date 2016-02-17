@@ -79,7 +79,7 @@ public class ServerImpl implements Server {
 		b.group(bossGroup, workerGroup);
 		init(b);
 		// 绑定端口，同步等待成功
-		b.bind(localPort).sync();
+		f =b.bind(localPort).sync();
 	}
 
 	public void stop() {
@@ -117,6 +117,7 @@ public class ServerImpl implements Server {
 						"等待EventLoopGroup shutdownGracefully中断");
 			}
 		}
+		LOGGER.logMessage(LogLevel.INFO, "关闭服务端完成");
 	}
 
 	public void startRun() {
