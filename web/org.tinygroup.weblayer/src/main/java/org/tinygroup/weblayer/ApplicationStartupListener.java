@@ -15,6 +15,19 @@
  */
 package org.tinygroup.weblayer;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.util.Enumeration;
+import java.util.List;
+
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.tinygroup.application.Application;
 import org.tinygroup.application.ApplicationProcessor;
 import org.tinygroup.application.impl.ApplicationDefault;
@@ -40,17 +53,6 @@ import org.tinygroup.weblayer.listener.TinyServletContext;
 import org.tinygroup.xmlparser.node.XmlNode;
 import org.tinygroup.xmlparser.parser.XmlStringParser;
 
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.util.Enumeration;
-import java.util.List;
-
 public class ApplicationStartupListener implements ServletContextListener {
 	private static Logger logger = LoggerFactory
 			.getLogger(ApplicationStartupListener.class);
@@ -62,6 +64,12 @@ public class ApplicationStartupListener implements ServletContextListener {
 		// SpringBeanContainer.destory();// 关闭spring容器
 		logger.logMessage(LogLevel.INFO, "WEB 应用停止完成。");
 		destroyContextListener(servletContextEvent);
+		SpringBeanContainer container = (SpringBeanContainer) BeanContainerFactory
+				.getBeanContainer(this.getClass().getClassLoader());
+		ApplicationContext application = container.getBeanContainerPrototype();
+		if (application instanceof ConfigurableApplicationContext) {
+			((ConfigurableApplicationContext) application).close();
+		}
 	}
 
 	@SuppressWarnings("unchecked")
