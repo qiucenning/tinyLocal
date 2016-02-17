@@ -26,16 +26,18 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.serialization.ClassResolvers;
 import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
+import io.netty.util.concurrent.Future;
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import org.tinygroup.logger.LogLevel;
 import org.tinygroup.logger.Logger;
 import org.tinygroup.logger.LoggerFactory;
 import org.tinygroup.nettyremote.Client;
 import org.tinygroup.nettyremote.DisconnectCallBack;
 import org.tinygroup.nettyremote.Exception.TinyRemoteConnectException;
-
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 public class ClientImpl implements Client {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ClientImpl.class);
@@ -146,16 +148,27 @@ public class ClientImpl implements Client {
 	public void stop() {
 		LOGGER.logMessage(LogLevel.INFO, "关闭客户端");
 		if (reConnect == true) {
+			reConnect = false;
 			executor.shutdown();
 		}
 		start = false;
+		Future wg = null;
 		try {
-			group.shutdownGracefully();
+			wg = group.shutdownGracefully();
 		} catch (Exception e) {
-			LOGGER.errorMessage("关闭Client时出错",e);
+			LOGGER.errorMessage("关闭Client时出错", e);
+		}
+
+		try {
+			if(wg!=null){
+				wg.await();
+			}
+		} catch (InterruptedException e) {
+			LOGGER.logMessage(LogLevel.INFO, "等待EventLoopGroup shutdownGracefully中断");
 		}
 		
 		setReady(false);
+		LOGGER.logMessage(LogLevel.INFO, "关闭客户端完成");
 	}
 
 	public void doReady() {

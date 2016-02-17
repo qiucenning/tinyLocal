@@ -16,6 +16,7 @@
 package org.tinygroup.nettyremote.impl;
 
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
@@ -25,12 +26,14 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.serialization.ClassResolvers;
 import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
+import io.netty.util.concurrent.Future;
+
+import java.io.IOException;
+
 import org.tinygroup.logger.LogLevel;
 import org.tinygroup.logger.Logger;
 import org.tinygroup.logger.LoggerFactory;
 import org.tinygroup.nettyremote.Server;
-
-import java.io.IOException;
 
 public class ServerImpl implements Server {
 	private static final Logger LOGGER = LoggerFactory
@@ -41,7 +44,7 @@ public class ServerImpl implements Server {
 	private EventLoopGroup bossGroup = new NioEventLoopGroup();
 	private EventLoopGroup workerGroup = new NioEventLoopGroup();
 	private int localPort;
-
+	private ChannelFuture f;
 	public ServerImpl(int localPort,boolean startFailStop) {
 		this.localPort = localPort;
 		this.startFailStop = startFailStop;
@@ -49,9 +52,10 @@ public class ServerImpl implements Server {
 	}
 
 	public void start() {
-		LOGGER.logMessage(LogLevel.INFO, "启动服务端线程,端口:{1}", localPort);
+		LOGGER.logMessage(LogLevel.INFO, "启动服务端,端口:{1}", localPort);
 		setStart(false);
 		startRun();
+		LOGGER.logMessage(LogLevel.INFO, "启动服务端完成,端口:{1}", localPort);
 	}
 
 	protected void init(ServerBootstrap b) {
@@ -80,16 +84,38 @@ public class ServerImpl implements Server {
 
 	public void stop() {
 		LOGGER.logMessage(LogLevel.INFO, "关闭服务端");
+		if (f != null) {
+			f.channel().closeFuture();
+		}
 		setStart(false);
+		Future bg = null;
 		try {
-			bossGroup.shutdownGracefully();
+			bg = bossGroup.shutdownGracefully();
 		} catch (Exception e) {
 			LOGGER.errorMessage("关闭服务端时发生异常", e);
 		}
+		Future wg = null;
 		try {
-			workerGroup.shutdownGracefully();
+			wg = workerGroup.shutdownGracefully();
 		} catch (Exception e) {
 			LOGGER.errorMessage("关闭服务端时发生异常", e);
+		}
+		if (bg != null) {
+			try {
+				bg.await();
+			} catch (InterruptedException ignore) {
+				LOGGER.logMessage(LogLevel.INFO,
+						"等待EventLoopGroup shutdownGracefully中断");
+			}
+		}
+
+		if (wg != null) {
+			try {
+				wg.await();
+			} catch (InterruptedException ignore) {
+				LOGGER.logMessage(LogLevel.INFO,
+						"等待EventLoopGroup shutdownGracefully中断");
+			}
 		}
 	}
 
