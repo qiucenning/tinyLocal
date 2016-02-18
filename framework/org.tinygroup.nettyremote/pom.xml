@@ -6,7 +6,6 @@
     <version>2.0.13</version>
   </parent>
   <artifactId>org.tinygroup.nettyremote</artifactId>
-   <version>2.0.13_1</version>
   <dependencies>
 		<dependency>
 			<groupId>io.netty</groupId>
@@ -19,13 +18,13 @@
 		<dependency>
 			<groupId>org.tinygroup</groupId>
 			<artifactId>org.tinygroup.logger</artifactId>
-			 <version>2.0.13</version>
+			 <version>${project.version}</version>
 		</dependency>
 		
 		<dependency>
 			<groupId>org.tinygroup</groupId>
 			<artifactId>org.tinygroup.threadgroup</artifactId>
-			 <version>2.0.13</version>
+			 <version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
