@@ -186,12 +186,14 @@ public class ClientImpl implements Client {
 		} catch (Exception e) {
 			LOGGER.errorMessage("关闭Client时出错", e);
 		}
-
-		try {
-			wg.await();
-		} catch (InterruptedException e) {
-			LOGGER.logMessage(LogLevel.INFO, "等待EventLoopGroup shutdownGracefully中断");
+		if(wg != null){
+			try {
+				wg.await();
+			} catch (InterruptedException e) {
+				LOGGER.logMessage(LogLevel.INFO, "等待EventLoopGroup shutdownGracefully中断");
+			}
 		}
+		
 
 		setReady(false);
 	}
