@@ -13,37 +13,31 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.tinygroup.service.util;
+package org.tinygroup.cepcoreimpl.test;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.tinygroup.cepcore.CEPCore;
 import org.tinygroup.cepcore.EventProcessor;
 import org.tinygroup.event.Event;
 import org.tinygroup.event.ServiceInfo;
-import org.tinygroup.service.ServiceProviderInterface;
+import org.tinygroup.logger.LogLevel;
+import org.tinygroup.logger.Logger;
+import org.tinygroup.logger.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class EventProcessorForValidate implements EventProcessor{
-	ServiceProviderInterface provider;
-	
-	
-	public ServiceProviderInterface getProvider() {
-		return provider;
-	}
-
-	public void setProvider(ServiceProviderInterface provider) {
-		this.provider = provider;
-	}
-
+public class EventProcessorForTestEnable implements EventProcessor {
 	List<ServiceInfo> list = new ArrayList<ServiceInfo>();
+	private static Logger LOGGER = LoggerFactory
+			.getLogger(EventProcessorForTestEnable.class);
+	private boolean enable = true;
 	public void process(Event event) {
-		provider.execute(event.getServiceRequest().getServiceId(), event.getServiceRequest().getContext());
+		String serviceId = event.getServiceRequest().getServiceId();
+		LOGGER.logMessage(LogLevel.INFO, "执行服务:{}", serviceId);
 	}
 
 	public void setCepCore(CEPCore cepCore) {
-		// TODO Auto-generated method stub
-		
+
 	}
 
 	public List<ServiceInfo> getServiceInfos() {
@@ -51,39 +45,35 @@ public class EventProcessorForValidate implements EventProcessor{
 	}
 
 	public String getId() {
-		return EventProcessorForValidate.class.getName();
+		return EventProcessorForTestEnable.class.getSimpleName();
 	}
 
 	public int getType() {
-		return EventProcessor.TYPE_LOCAL;
+		return 2;
 	}
 
 	public int getWeight() {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	public List<String> getRegex() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	public boolean isRead() {
-		// TODO Auto-generated method stub
-		return true;
+		return false;
 	}
 
 	public void setRead(boolean read) {
-		// TODO Auto-generated method stub
-		
+
 	}
 
 	public boolean isEnable() {
-		return true;
+		return enable;
 	}
 
 	public void setEnable(boolean enable) {
-		
+		this.enable = enable;
 	}
 
 }

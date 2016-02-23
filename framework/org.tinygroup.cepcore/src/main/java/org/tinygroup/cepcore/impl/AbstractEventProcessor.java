@@ -23,12 +23,22 @@ import org.tinygroup.cepcore.EventProcessor;
  * 
  */
 public abstract class AbstractEventProcessor implements EventProcessor {
-
+	
+	private boolean enable = true;
+	
 	public String getId() {
 		return this.getClass().getSimpleName();
 	}
 
 	public int getType() {
 		return EventProcessor.TYPE_LOCAL;
+	}
+	
+	public boolean isEnable() {
+		return enable;
+	}
+
+	public void setEnable(boolean enable) {
+		this.enable = enable;
 	}
 }

@@ -82,5 +82,11 @@ public class EventProcessor2 implements EventProcessor {
 		// TODO Auto-generated method stub
 		
 	}
+	public boolean isEnable() {
+		return true;
+	}
 
+	public void setEnable(boolean enable) {
+		
+	}
 }

@@ -63,4 +63,12 @@ public class EventProcessorForTest  implements EventProcessor{
 		
 	}
 
+	public boolean isEnable() {
+		return true;
+	}
+
+	public void setEnable(boolean enable) {
+		
+	}
+
 }

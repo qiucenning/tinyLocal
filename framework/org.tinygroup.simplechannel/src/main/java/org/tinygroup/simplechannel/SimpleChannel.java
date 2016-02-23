@@ -22,7 +22,8 @@ import org.tinygroup.event.ServiceInfo;
 import java.util.List;
 
 public class SimpleChannel extends AbstractChannel {
-
+	boolean enable = true;
+	boolean read= true;
 	public String getId() {
 		return this.getClass().getSimpleName();
 	}
@@ -52,12 +53,19 @@ public class SimpleChannel extends AbstractChannel {
 
 	public boolean isRead() {
 		// TODO Auto-generated method stub
-		return true;
+		return read;
 	}
 
 	public void setRead(boolean read) {
-		// TODO Auto-generated method stub
-		
+		this.read = read;
+	}
+
+	public boolean isEnable() {
+		return enable;
+	}
+
+	public void setEnable(boolean enable) {
+		this.enable = enable;
 	}
 
 }
