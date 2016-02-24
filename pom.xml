@@ -108,6 +108,20 @@
             </build>
         </profile>
     </profiles>
+	<distributionManagement>
+        <snapshotRepository>
+            <id>tiny-nexus-snapshots</id>
+            <name>tiny Nexus Snapshots</name>
+            <url>http://www.tinygroup.org/nexus/content/repositories/release/</url>
+        </snapshotRepository>
+        <repository>
+            <id>tiny-nexus-releases</id>
+            <name>tiny Release Repository</name>
+            <url>http://www.tinygroup.org/nexus/content/repositories/release/</url>
+        </repository>
+</distributionManagement>
+
+
     <build>
         <plugins>
             <plugin>
